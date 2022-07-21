@@ -7,8 +7,10 @@ For more information and if you want to reference the code please refer to
    ```
    T. Deppisch, S. Amengual Garí, P. Calamia, and J. Ahrens, 
    "Direct and Residual Subspace Decomposition of Spatial Room Impulse Responses," 
-   ADD INFORMATION, 2022.
+   arXiv preprint, 2022, doi:10.48550/arxiv.2207.09733.
    ```
+   
+A [website with audio examples](http://www.ta.chalmers.se/srir-subspace-decomposition/) is available.   
    
 ## Acknowledgment
 We thank Meta Reality Labs Research for funding this project.
