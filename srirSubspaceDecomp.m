@@ -5,8 +5,8 @@ function [dirSrir, resSrir, numDirSubspaceComponents, gsvs, detectionThreshold, 
 % Responses, for details please refer to the following publication:
 %
 % T. Deppisch, S. Amengual Gari, P. Calamia, J. Ahrens, "Direct and
-% Residual Subspace Decomposition of Spatial Room Impulse Responses," 
-% IEEE/ACM Transactions on Audio, Speech and Language Processing, 2022.
+% Residual Subspace Decomposition of Spatial Room Impulse Responses,"
+% arXiv preprint, 2022, doi:10.48550/arxiv.2207.09733.
 %
 % thomas.deppisch@chalmers.se
 
