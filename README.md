@@ -1,4 +1,4 @@
-# The Direct and Residual Subspace Decomposition for Spatial Room Impulse Responses
+# Direct and Residual Subspace Decomposition for Spatial Room Impulse Responses
 
 This repository contains a MATLAB implementation of the direct and residual subspace decomposition for spatial room impulse responses (SRIRs). The method decomposes SRIRs into a direct part, comprising direct sound and salient reflections, and a residual.
 
