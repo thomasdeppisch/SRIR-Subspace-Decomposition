@@ -6,20 +6,19 @@ srirStruct = load('resources/TA_lecture_hall_em32_ACN_N3D.mat');
 srir = srirStruct.srir;
 fs = srirStruct.fs;
 
-shOrder = 4;
-
 % parameters for the subspace decomposition, see the function header of srirSubspaceDecomp for details
 blockLenSmp = 32;
 hopSizeSmp = blockLenSmp / 8;
-noiseAnalysisTimeMs = 20;
+kappa = 3;
+numBlocksGsvSumAvg = 32;
+residualEstimateLengthMs = 20;
 decompositionTimeLimitMs = 100;
 numBlocksSmoothThresh = 1;
-numBlocksGsvSumAvg = 32;
-kappa = 3;
 
 [dirSrir, resSrir, numDirSubspaceComponents, gsvs, detectionThreshold, gsvSum, avgGsvSum] = ...
-            srirSubspaceDecomp(srir, fs, blockLenSmp, hopSizeSmp, noiseAnalysisTimeMs, decompositionTimeLimitMs, ...
-            numBlocksSmoothThresh, numBlocksGsvSumAvg, kappa);
+            srirSubspaceDecomp(srir, fs, blockLenSmp, hopSizeSmp, kappa, numBlocksGsvSumAvg, residualEstimateLengthMs, ...
+                               decompositionTimeLimitMs, numBlocksSmoothThresh);
+
 
 %% plot
 srirLen = size(srir,1);
@@ -31,7 +30,6 @@ hold on
 plot(t*1000, db(sum(abs(dirSrir), 2)), 'LineWidth', 2)
 plot(t*1000, db(sum(abs(resSrir), 2)), 'LineWidth', 2)
 xlim([0,100])
-%ylim(yLimitsDb)
 xlabel('$t$ (ms)')
 ylabel('$\| \cdot \|$ (dB)')
 legend('$\mathbf{x}_\mathrm{d}(t)$', '$\mathbf{x}_\mathrm{r}(t)$')
@@ -56,4 +54,4 @@ grid on
 xlabel('$t$ (ms)')
 xlim([0,100])
 ylim([0,10])
-legend([hGSVCumsum, hAvgGSVs, hDetectionThresh], 'cumulative sums of GSVs', 'detection threshold', 'subspace component threshold')
+legend([hGSVCumsum, hAvgGSVs, hDetectionThresh], 'cumulative sums of GSVs', 'subspace component threshold', 'detection threshold')

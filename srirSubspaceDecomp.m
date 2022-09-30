@@ -1,6 +1,6 @@
 function [dirSrir, resSrir, numDirSubspaceComponents, gsvs, detectionThreshold, gsvSum, avgGsvSum] = ...
-            srirSubspaceDecomp(srir, fs, blockLenSmp, hopSizeSmp, noiseAnalysisTimeMs, decompositionTimeLimitMs, ...
-            numBlocksSmoothThresh, numBlocksGsvSumAvg, kappa)
+            srirSubspaceDecomp(srir, fs, blockLenSmp, hopSizeSmp, kappa, numBlocksGsvSumAvg, residualEstimateLengthMs, ...
+                               decompositionTimeLimitMs, numBlocksSmoothThresh)
 % Direct and Residual Subspace Decomposition of Spatial Room Impulse
 % Responses, for details please refer to the following publication:
 %
@@ -12,15 +12,15 @@ function [dirSrir, resSrir, numDirSubspaceComponents, gsvs, detectionThreshold, 
 
 % Input parameters (many have default values)
 arguments
-    srir (:,:)                           % Spatial room impulse response, samples x channels
-    fs (1,1)                             % Sampling frequency in Hz
-    blockLenSmp (1,1) = 32               % Block length in samples
-    hopSizeSmp (1,1) = blockLenSmp / 8   % Hop size in samples
-    noiseAnalysisTimeMs (1,1) = 20       % Length of the noise estimate in milliseconds
-    decompositionTimeLimitMs (1,1) = 100 % Latest time instant at which the decomposition is performed in milliseconds. (Time limit after which no salient reflections are expected.)
-    numBlocksSmoothThresh (1,1) = 1      % Number of signal blocks over which the estimation of the number of subspace components is smoothed. (No smoothing if numBlocksSmoothThresh = 1. If numBlocksSmoothThresh = 3, the number of subspace components of the current block is the maximum of the number of estimated subspace components of the current and the two next blocks.)
-    numBlocksGsvSumAvg (1,1) = 32        % Number of blocks to average the sum of the generalized singular values to determine the detection threshold.
-    kappa (1,1) = 3                      % Detection threshold: kappa is the number of standard deviations that the sum of the generalized singular values need to exceed over their mean so that a reflection is detected.
+    srir (:,:)                               % Spatial room impulse response, samples x channels
+    fs (1,1)                                 % Sampling frequency in Hz
+    blockLenSmp (1,1) = max(32,size(srir,2)) % Block length in samples
+    hopSizeSmp (1,1) = round(blockLenSmp/8)  % Hop size in samples
+    kappa (1,1) = 3                          % Detection threshold: kappa is the number of standard deviations that the sum of the generalized singular values need to exceed over their mean so that a reflection is detected.
+    numBlocksGsvSumAvg (1,1) = 32            % Number of blocks to average the sum of the generalized singular values to determine the detection threshold.
+    residualEstimateLengthMs (1,1) = 20      % Length of the residual (noise) estimate in milliseconds
+    decompositionTimeLimitMs (1,1) = 100     % Latest time instant at which the decomposition is performed in milliseconds. (Time limit after which no salient reflections are expected.)
+    numBlocksSmoothThresh (1,1) = 1          % Number of signal blocks over which the estimation of the number of subspace components is smoothed. (No smoothing if numBlocksSmoothThresh = 1. If numBlocksSmoothThresh = 3, the number of subspace components of the current block is the maximum of the number of estimated subspace components of the current and the two next blocks.)
 end
 
 % Output:
@@ -36,7 +36,7 @@ numSamples = size(srir,1);
 numChannels = size(srir,2);
 
 numValidSamples = hopSizeSmp;
-numNoiseSamples = noiseAnalysisTimeMs / 1000 * fs;
+numResidualSamples = residualEstimateLengthMs / 1000 * fs;
 decompositionTimeLimitSmp = decompositionTimeLimitMs / 1000 * fs;
 
 % some sanity checks
@@ -46,11 +46,11 @@ end
 if blockLenSmp < numChannels
     error('srirSubspaceDecomp: winLenSmp needs to be equal or larger than numChannels.')
 end
-if numNoiseSamples < numChannels
-    error('srirSubspaceDecomp: numNoiseSamples needs to be equal or larger than numChannels.')
+if numResidualSamples < numChannels
+    error('srirSubspaceDecomp: numResidualSamples needs to be equal or larger than numChannels.')
 end
-if decompositionTimeLimitSmp + numNoiseSamples > numSamples
-    error('srirSubspaceDecomp: decompositionTimeLimitSmp plus numNoiseSamples exceeds the impulse response.')
+if decompositionTimeLimitSmp + numResidualSamples > numSamples
+    error('srirSubspaceDecomp: decompositionTimeLimitSmp plus numResidualSamples exceeds the impulse response.')
 end
 
 win = hann(blockLenSmp);
@@ -58,14 +58,14 @@ overlapSmp = blockLenSmp - hopSizeSmp;
 
 srirPadded = [zeros(overlapSmp/2, numChannels); srir];
 numBlocks = ceil((size(srirPadded,1) - overlapSmp) / hopSizeSmp);
-numNoiseBlocks = round((numNoiseSamples - blockLenSmp) / numValidSamples + 1);
+numNoiseBlocks = round((numResidualSamples - blockLenSmp) / numValidSamples + 1);
 srirBuffered = zeros(blockLenSmp, numChannels, numBlocks);
 for ch = 1:numChannels
     srirBuffered(:,ch,:) = buffer(srirPadded(:,ch), blockLenSmp, overlapSmp, 'nodelay');
 end
 
 blockOffset = overlapSmp/2 + 1;
-noiseDataMatrix = zeros(numNoiseSamples, numChannels);
+noiseDataMatrix = zeros(numResidualSamples, numChannels);
 dirSrir = zeros(numSamples, numChannels);
 resSrir = srir;
 numComponents = zeros(numBlocks,1);
