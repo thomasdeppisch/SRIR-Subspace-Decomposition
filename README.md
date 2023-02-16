@@ -7,7 +7,7 @@ For more information and if you want to reference the code [please refer to the 
    ```
    T. Deppisch, S. Amengual Garí, P. Calamia, and J. Ahrens, 
    "Direct and Residual Subspace Decomposition of Spatial Room Impulse Responses," 
-   IEEE/ACM Transactions on Audio, Speech, and Language Processing, 2023, doi:10.1109/TASLP.2023.3240657.
+   IEEE/ACM Transactions on Audio, Speech, and Language Processing, vol. 31, pp. 927–942, 2023, doi:10.1109/TASLP.2023.3240657.
    ```
    
 A [website with audio examples](http://www.ta.chalmers.se/srir-subspace-decomposition/) is available.   
